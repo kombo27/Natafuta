@@ -1,0 +1,77 @@
+# Ninatafuta – web app (React + TypeScript)
+
+Classifieds marketplace for Kenya, Tanzania and Uganda, built from the app concept and the
+“Screens and functions v2.0” document (23 November 2026). It covers every screen and function of
+the prototype: registration, home, search with radius, listing detail, chat, ratings, Ninatafuta Pay
+with delivery, selling and boosts, requests, profile with ID badge and shop account, banners,
+moderation, Kiswahili/English, dark mode, data saver and offline notice.
+
+## Run it
+
+```bash
+npm install
+npm run dev        # http://localhost:5173 (also reachable from a phone on the same network)
+npm run build      # type-check + production build into dist/
+npm run typecheck
+```
+
+Requires Node 18 or later. No backend is needed: data is kept in the browser (`localStorage`).
+
+## Project structure
+
+```
+src/
+  types.ts              data model (appendix D) and navigation types
+  data/                 countries + towns, 12 categories with subcategories, example prices, demo ads
+  i18n/index.ts         all texts in English and Kiswahili (type-checked: both languages must have every key)
+  lib/                  search (radius, keyword, price, sorting), geo (haversine, GPS), pricing (Pay fee,
+                        delivery), image compression, formatting
+  store/store.tsx       app state, persistence, navigation stack, all actions and simulated timers
+  components/           shared UI (buttons, chips, sheets, listing rows, seller card) and app chrome
+  screens/              one file per screen (Home, Search, ListingDetail, Messages/Chat, Sell, Wanted,
+                        Profile, SellerProfile, Order, Notifications, Moderation, Onboarding)
+  sheets/Sheets.tsx     bottom sheets: Pay, Rate, Report, Boost, ID check, Shop, Banner
+  styles.css            mobile-first styles, light and dark theme
+```
+
+## How it works
+
+State lives in one `AppState` object (`store/store.tsx`). Screens read it through `useStore()` and change
+it only through `actions`, so replacing the local implementation with API calls later touches one file.
+Navigation is a small typed route stack (`Route` in `types.ts`); the bottom tabs reset the stack.
+
+Simulated behaviour, as in the prototype: the SMS code is shown on screen; sellers reply once
+automatically; replies to requests arrive after about 6 seconds; saved-search alerts after about
+7 seconds; ID checks complete after about 5 seconds; order steps advance on timers; a buyer review
+arrives about 5 seconds after an ad is marked as sold. No money is charged and nothing is uploaded.
+
+Key rules implemented: phone numbers are normalised to 9 digits (leading 0 or country code removed);
+the search area runs from 2 km to all East Africa and crosses borders; price filters apply only to ads
+in the currency of the chosen place; Ninatafuta Pay is offered for goods with a price (not jobs,
+services, property or Bure); boda boda delivery up to 60 km, bus parcel beyond; Pay fee 2 % with a
+minimum; one review per ad; only the last three characters of an ID number are kept.
+
+## Towards production
+
+The concept foresees Flutter or React Native for the phone apps, this web app as a PWA, and a central
+API. Replace the parts of `store/store.tsx` marked as prototype with:
+
+- an auth service with an SMS gateway (OTP) instead of the on-screen code,
+- a listings API with a location-aware search engine and cloud image storage,
+- real-time chat and push/SMS notifications,
+- mobile money integrations for boosts, shops, banners and Ninatafuta Pay,
+- an identity-verification provider and delivery-partner integrations,
+- a moderation back office.
+
+## Before any business use
+
+All prices, fees, payment providers, delivery partners, coordinates, Swahili texts and legal references
+are examples. Verify them against independent, current sources and have the Swahili texts reviewed by
+native speakers.
+
+The app handles personal data (phone numbers, names, locations, messages). ID documents and selfies used
+for the ID badge are particularly sensitive, and facial images processed for identification are biometric
+data. Collect only what is needed, define retention periods, use a specialised provider and obtain local
+legal advice on the Kenya Data Protection Act 2019, the Tanzania Personal Data Protection Act 2022 and the
+Uganda Data Protection and Privacy Act 2019. Holding buyer money in escrow is very likely to need a payment
+or e-money licence or a licensed partner in each country.
